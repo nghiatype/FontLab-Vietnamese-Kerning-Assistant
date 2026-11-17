@@ -1,0 +1,20 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Local environments
+.venv/
+venv/
+
+# Font files
+*.vfc
+*.vfb
+*.otf
+*.ttf
+*.woff
+*.woff2
+
+# Temporary files
+*.log
+*.bak
