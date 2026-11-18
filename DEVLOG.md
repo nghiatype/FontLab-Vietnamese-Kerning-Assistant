@@ -56,3 +56,14 @@ Sao chép phần dưới, thay ngày và đặt **lên trên mục cũ**:
 - Tích hợp các tính năng trong một plugin NghiaType Tools.
 
 **Nguyên tắc:** Giữ V1 ổn định, backup trước khi ghi, không thử API chưa xác minh trên font client.
+
+## 18-11-2026
+### ✅ Done
+- Xác nhận truy cập được fgGroup thực tế
+- Đọc được group ID, mode và memberships
+- Xác định kiểu dữ liệu trả về
+- Không chỉnh sửa font
+### 🔍 Next
+- Nghiên cứu cách cập nhật memberships
+- Kiểm thử trên font tạm trong bộ nhớ
+- Xác minh kết quả trước khi thử Apply
