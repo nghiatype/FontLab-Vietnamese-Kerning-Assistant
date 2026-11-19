@@ -1,243 +1,135 @@
-# NghiaType Tools — Development Log
+# NghiaType — Development Log
 
-Ghi lại tiến độ phát triển, các vấn đề gặp phải và bước tiếp theo.
+Nhật ký quyết định và kết quả thử nghiệm của NghiaType FontLab Tools. Mục đích là để Nghĩa hoặc một AI/người phát triển khác có thể **tiếp tục dự án mà không phải đoán lại cách FontLab hoạt động**.
 
-> Cách dùng: Mỗi buổi làm việc, thêm một mục ngày mới **ở trên cùng** theo mẫu cuối file. Không cần ghi quá dài.
+> **Quy ước:** Ghi mục mới lên đầu theo ngày. Phân biệt rõ **đã thử trong FontLab**, **đã kiểm tra offline** và **chưa xác minh**. Đừng ghi “ổn định trên mọi font” khi chỉ thử với một font COPY.
 
-## 2026-11-17 — Native Kerning Research
+## 19/11/2026 — Kerning Studio 1.9.3 Beta
 
-### ✅ Done
+**Trạng thái:** Hoàn thành mốc Beta cho Kerning Studio trên **FontLab 8**; tiếp tục theo dõi qua sử dụng thực tế. FontLab 9 writer vẫn chưa hỗ trợ.
 
-- Vietnamese Kerning Assistant V1 đã kiểm thử trên FontLab 8/9; thử nghiệm thành công 154 glyph memberships trong 17 classes.
-- GUI Material 3 Expressive (Tropical) đã chạy; sửa lỗi tiếng Việt và bổ sung lựa chọn nơi lưu báo cáo.
-- Đã phát hành bản beta `v1.0.0-beta.1` trên GitHub.
-- Native Class Reader đọc được 50 native kerning classes (24 trái, 26 phải).
-- Native Class Preview đề xuất 7 memberships vào 3 classes trên font thử nghiệm; **chưa Apply**.
+### Đã hoàn thành
 
-### 🔬 Issues / Findings
+- Hợp nhất **Native Classes → Cross-check → OT Sync & Apply** trong một giao diện với sidebar và các bước riêng.
+- Giữ **Native Core V2** và **OpenType Core V1** độc lập. Cross-check so sánh dữ liệu; không tự viết từ bên này sang bên kia.
+- **Native:** quét class, gợi ý glyph có dấu tiếng Việt, tick từng glyph/class, xem trước, kiểm tra lựa chọn, ghi từng class trên bản COPY và đọc lại kết quả.
+- **Cross-check:** đọc class Native và text feature `kern`, liên kết dựa trên glyph đại diện + đúng bên kerning. Một OpenType class có thể dùng cho cả **LEFT và RIGHT**; kiểm tra từng bên riêng. Hiển thị `MATCH`, `DIFFERENT`, `UNMAPPED` và glyph khác biệt.
+- **OpenType:** chọn glyph cần thêm vào class đã có, tạo FEA diff, kiểm tra trước khi ghi, yêu cầu backup `.fea` mới, xác nhận ghi và đọc lại feature.
+- Cho phép chuyển từ **Native Apply đã xác minh** sang Cross-check và OT Sync **trong cùng phiên FontLab**, không bắt buộc Save/Close/Reopen ở giữa. Các điều kiện an toàn và kiểm tra lại dữ liệu trực tiếp vẫn được giữ.
+- Không tự Save, Compile, viết lại kerning pair values hoặc tái tạo toàn bộ feature `kern`.
 
-- V1 chỉnh sửa text OpenType `kern`, chưa cập nhật Native Kerning Classes.
-- `fgKerning.addGroup` chưa xác định được cách gọi hợp lệ (`Unexpected SeqBase<T> length`).
-- Constructor `fgGroup` chưa nhận kiểu tham số đã thử (`Incorrect args type`).
-- Các thử nghiệm Native Writer chỉ thực hiện trên font tạm trong bộ nhớ; không sửa font đang mở.
-- Cần lưu ý FontLab 8 đôi khi phải vào **Font Info → Apply** sau khi mở font OTF/TTF để khởi tạo đầy đủ.
+### Các mốc phát hành nhỏ
 
-### 📌 Next
+| Mốc | Nội dung |
+| --- | --- |
+| **1.9.1 Beta** | Kết hợp Kerning Studio thành workflow với Native và OT riêng |
+| **1.9.2 Beta** | Bỏ giới hạn thử nghiệm 20 class/200 membership ở phần chọn Native tích hợp; vẫn ghi từng class và đọc lại |
+| **1.9.3 Beta** | Thiết kế lại Cross-check theo UI mẫu, mô tả trạng thái trực quan, luồng Native → OT trong cùng phiên; sửa tương thích PythonQt và căn chỉnh panel |
 
-- Kiểm tra cấu trúc `fgGroup` thực tế từ một native class có sẵn (**read-only**).
-- Xác định phương thức ghi Native Kerning Classes an toàn.
-- Khi đã xác minh: thử trên font **Copy**, bảo toàn pairs/exceptions và kiểm tra sau Save/Reopen.
-- Chỉ tích hợp vào GUI khi tính năng Native Apply hoạt động ổn định.
+### Kết quả thử nghiệm
+
+- **FontLab 8 / font COPY:** đã có các lần ghi Native và OpenType thành công, readback chính xác, lưu/mở lại và Cross-check không còn khác biệt. Đây là các lần thử cụ thể, **không phải bảo đảm cho mọi font**.
+- **Kiểm thử Cross-check:** font Post Grotesk Light có 878 glyphs, 138 Native classes; một lần so sánh 137 class khớp và 1 class khác biệt (`Y`), sau đó xem đề xuất bổ sung glyph.
+- **OT Guarded Writer:** từng xác minh thêm 4 thành viên vào class `@_Y` với readback chính xác; các `pos` hiện có được giữ nguyên. Có trường hợp glyph có 12 tham chiếu POS riêng — chỉ báo thông tin, không mặc định chặn việc thêm vào class.
+- **92/92 offline tests PASS** ở bản 1.9.3 cuối ngày, gồm mô phỏng getter PythonQt dưới dạng property/method. Các kiểm thử offline **không thay thế** việc mở UI và chạy trong FontLab thực tế.
+- **Chưa xác minh trên host:** bố cục UI cuối cùng ở mọi DPI/độ phân giải và toàn bộ chuỗi Native → OT không Save trung gian trên nhiều font. Tiếp tục thử trên bản COPY.
+
+### Lỗi đã xử lý trong quá trình tích hợp
+
+- FontLab có **Kerning Both**: Native đôi khi tách trái/phải thành `Y` và `Y2` vì không cho trùng tên. Không được ghép class chỉ vì tên giống nhau; một OT class có thể khớp cả hai phía.
+- FontLab có thể **Create [kern] Feature / Update on Compile**, làm thay đổi nội dung FEA. Preflight phải dùng bản text `kern` hiện tại, phát hiện dữ liệu đổi từ lúc preview và yêu cầu quét lại khi cần.
+- Một số getter trong PythonQt là **giá trị**, không phải hàm: `currentIndex`, `isVisible`, `topLevelItemCount`. Dùng helper đọc được cả property lẫn callable để tránh `TypeError: 'int' object is not callable`.
+- Có lần bấm nhiều checkbox Native khiến FontLab đóng đột ngột trong GUI tích hợp; đã chỉnh cơ chế tương tác, sau đó người dùng test lại nhiều kiểu và xác nhận ổn. Vẫn nên tránh thay đổi widget/table tùy tiện nếu chưa test trong FL8.
+- Các phiên bản thử nghiệm trước có yêu cầu Save/Close/Reopen quá sớm; bản 1.9.3 cho phép tiếp tục trong phiên sau Native readback thành công nhưng không bỏ preflight và writer readback.
+- UI đã được tinh chỉnh theo bản mẫu: sidebar, phân tách workflow, bảng 2 cột, cột Unicode ở Native, Cross-check `MATCH/DIFFERENT`, panel giải thích tiếng Việt, khoảng cách và badge.
+
+### Quyết định trước khi khép mốc Kerning
+
+- **Chốt phạm vi Beta**, không mở rộng parser hay thêm writer mới trong cùng lần phát hành.
+- Mọi tác vụ ghi phải do người dùng chủ động chọn và xác nhận. `DIFFERENT` chỉ là dữ liệu kiểm tra, **không phải quyền ghi**.
+- Giữ lại các file cũ trong `Archive/` để tra cứu nhưng chỉ chạy bộ file release cùng thư mục.
+- `README.md` phải mô tả **bản 1.9.3**, không còn hướng dẫn khởi chạy GUI V1 như công cụ chính.
 
 ---
 
-## Mẫu ghi cho lần tiếp theo
+## 18/11/2026 — Native Kerning V2 / nghiên cứu writer
 
-Sao chép phần dưới, thay ngày và đặt **lên trên mục cũ**:
+### Hoàn thành
+
+- Đọc được cấu trúc `fgGroup`: tên, mode (`KernLeft`/`KernRight`) và danh sách thành viên.
+- Xây Native scanner, Vietnamese candidate discovery, selective preview và **Guarded Native Apply** cho FontLab 8 trên bản font COPY.
+- Ghi theo từng bước, sau mỗi bước đối chiếu thành viên Native và các kerning pair values; **không tự Save**.
+- Xây giao diện Native V2 với Material 3 Expressive: metric cards, bảng Native Classes/Proposed Glyphs, Preview và Apply tách riêng.
+- Đã thử Save/Reopen và kiểm tra tính năng kerning không bị hỏng trong font COPY.
+
+### Dữ liệu quan sát trong font thử
+
+- 878 glyphs; 138 Native classes; 134 Vietnamese candidates.
+- Một thời điểm có 174 đề xuất membership ở 21 class; sau khi thêm 6 thành viên vào 2 class và Save/Reopen, còn 168 đề xuất.
+- Bài kiểm thử GUI V2 tại thời điểm chốt: 17/17 offline tests PASS. Những bài kiểm thử sau đó được mở rộng ở V3.
+
+### FontLab 9 — giới hạn chưa giải quyết
+
+- Native reader/discovery/preview đã hoạt động; writer **khóa**.
+- `fgKerning.addGroup`/`fgGroup` gặp vấn đề chữ ký/kiểu đối số; `fgKerningGroups` không hỗ trợ `__setitem__` trong thử nghiệm.
+- TypeRig không tìm thấy trong môi trường FL9 thử nghiệm. **Không suy diễn** API ghi từ FL8 sang FL9.
+
+### Quyết định kiến trúc
+
+**Hợp nhất giao diện, không hợp nhất Native Core và OT Core.** Mỗi bên có scanner, dữ liệu, safety gate và writer riêng. Đối chiếu phải rõ bên trái/phải và không tự cập nhật class chỉ dựa vào tên.
+
+---
+
+## 17/11/2026 — Khởi đầu Native + OpenType V1
+
+- Vietnamese Kerning Assistant V1 đọc text `kern` và bổ sung glyph vào các **OpenType class đã tồn tại**; đã từng test 154 membership ở 17 class trên font COPY, sau readback và Save/Reopen không còn gợi ý trong lần thử đó.
+- GUI V1 dùng PythonQt, tạo FEA backup/diff và báo cáo JSON. V1 **không** ghi trực tiếp Native classes.
+- Native reader ban đầu chỉ đọc được 50 class (24 trái, 26 phải) trên trạng thái font lúc đó; số liệu về sau tăng lên 138 class ở font khác/trạng thái khác.
+- Các probe đầu tiên với `fgKerning.addGroup` và `fgGroup` gặp lỗi kiểu dữ liệu; thử nghiệm writer khi đó chỉ dùng font tạm trong bộ nhớ.
+- Nhận ra `Create [kern] Feature` hoặc `Update all auto features` có thể tái tạo OT từ Native, làm những chỉnh sửa OT cũ biến mất. Đây là hành vi FontLab phải tính đến trong workflow.
+
+---
+
+## Hợp đồng an toàn — Không bỏ khi phát triển tiếp
+
+1. **Read-only là read-only:** Scan, Preview và Cross-check không được thay đổi font.
+2. **Ghi chỉ trên COPY:** font đã lưu, có bản backup độc lập. Không dùng font client gốc để thử API.
+3. **Kiểm tra lại trước khi ghi:** font/master, số master, glyph, nhóm Native, pair values, text `kern`, lựa chọn, trạng thái feature; nếu khác với lúc duyệt thì chặn và yêu cầu kiểm tra lại.
+4. **Tác vụ ghi có xác nhận:** kế hoạch xem trước → kiểm tra an toàn → xác nhận người dùng → ghi → đọc lại. Writer OT còn yêu cầu backup `.fea` mới.
+5. **Không tự Save/Compile:** chỉ thay đổi trong bộ nhớ; người dùng Save bản COPY sau khi kết quả được xác minh.
+6. **Readback lỗi hoặc ghi một phần:** cảnh báo **DO NOT SAVE**, đóng bản COPY không lưu, điều tra nguyên nhân. Không giả định có rollback tự động.
+7. **Không gộp writer:** Native và OpenType có đường ghi riêng; thay đổi class không được tự sửa POS/pair values.
+8. **FontLab 9 writer vẫn khóa** cho đến khi có test API thực tế và readback đủ tin cậy.
+9. **Giới hạn parser:** Cross-check hiện chỉ hiểu các khai báo class và `pos` đơn giản trong text `kern`, chưa bao phủ GPOS biên dịch và cú pháp FEA đầy đủ.
+10. **Bảo mật:** báo cáo, file `.fea` và ảnh lỗi có thể chứa glyph names, class lists, đường dẫn và dữ liệu font client; kiểm tra trước khi đưa lên GitHub công khai.
+
+## Backlog — Sau Kerning Studio
+
+| Hướng | Phạm vi dự kiến | Trạng thái |
+| --- | --- | --- |
+| **OpenType Studio** | Duyệt classes, features, lookup GSUB/GPOS; kiểm tra thiếu/trùng và tham chiếu | Chưa xây hoàn chỉnh |
+| **Accented Alternates** | Từ `A.ss01` có anchor, đề xuất composite `Aacute.ss01`, `Abreveacute.ss01`… với công thức để FontLab tự ghép | Ý tưởng đã thống nhất, chưa triển khai |
+| **Ligatures** | Hỗ trợ xây các biến thể có dấu cho ligature khi thật sự hợp lý | Cần thiết kế quy tắc |
+| **Glyph Matrix** | Kiểm tra encoding, Unicode, glyph thiếu và hỗ trợ tự tổ chức bộ ký tự | Đang lên kế hoạch |
+| **Language Coverage** | Quét hỗ trợ ngôn ngữ, chỉ ra glyph thiếu và liên kết tiêu chuẩn Unicode | Đang lên kế hoạch |
+| **FontLab 9** | Khảo sát và xác minh writer riêng | Khóa ghi, ưu tiên sau |
+
+**Nguyên tắc sản phẩm:** Hybrid — tận dụng khả năng sẵn có của FontLab, chỉ đơn giản hóa thao tác phức tạp/lặp lại và cung cấp hướng dẫn dễ hiểu; không xây lại FontLab.
+
+## Mẫu cho lần ghi tiếp theo
 
 ```markdown
-## YYYY-MM-DD — Tên công việc
+## DD/MM/YYYY — Tên công việc
 
-### ✅ Done
+### Đã hoàn thành
 - ...
 
-### 🔬 Issues / Findings
+### Đã test (nêu rõ FontLab thực tế hay offline)
 - ...
 
-### 📌 Next
+### Lỗi / giới hạn
+- ...
+
+### Bước tiếp theo
 - ...
 ```
-
-## Backlog — Ý tưởng tương lai
-
-- Tự động thêm/xóa anchor cho glyph mở rộng.
-- Hỗ trợ tạo và cập nhật OpenType Features (FEA).
-- Thống kê ngôn ngữ mà font hỗ trợ.
-- Tích hợp các tính năng trong một plugin NghiaType Tools.
-
-**Nguyên tắc:** Giữ V1 ổn định, backup trước khi ghi, không thử API chưa xác minh trên font client.
-
-## 18-11-2026
-### ✅ Done
-- Xác nhận truy cập được fgGroup thực tế
-- Đọc được group ID, mode và memberships
-- Xác định kiểu dữ liệu trả về
-- Không chỉnh sửa font
-### 🔍 Next
-- Nghiên cứu cách cập nhật memberships
-- Kiểm thử trên font tạm trong bộ nhớ
-- Xác minh kết quả trước khi thử Apply
-
-NGHIATYPE FONT DEVELOPMENT
-DEVLOG — 18/11/2026
-Project: NghiaType Tools / Native Kerning V2 GUI
-Status: Đóng phiên làm việc — GUI V2 Alpha.1.9
-
-============================================================
-1. KẾT QUẢ CHÍNH
-============================================================
-
-- Hoàn thành vòng phát triển GUI Native Kerning V2 bằng PythonQt cho FontLab 8/9.
-- Giao diện sử dụng hướng thiết kế Material 3 Expressive, bảng màu Tropical;
-  bản Alpha.1.8 tham chiếu thiết kế HTML do Nghĩa cung cấp.
-- Bản mới nhất: V2 Alpha.1.9 / Refined Layout.
-- Giữ nguyên Native Core V2 Alpha.1.4.1 và Core V1 Stable.
-- Không tự động Apply hoặc Save. Các thao tác ghi Native Class chỉ
-  được cho phép với FontLab 8 theo cơ chế Guarded Apply.
-- FontLab 9 vẫn chỉ Scan / Select / Preview / Export JSON; native writer bị khóa.
-
-============================================================
-2. CORE NATIVE KERNING V2 — TRẠNG THÁI
-============================================================
-
-FontLab 8:
-  [PASS] Native Class Reader
-  [PASS] Vietnamese Candidate Discovery
-  [PASS] Selective Planning / Read-only Preview
-  [PASS] Guarded Native Apply trên bản COPY thử nghiệm
-  [PASS] Stepwise Readback
-  [PASS] Save / Reopen kiểm tra kết quả
-  [PASS] Kerning behavior đã được kiểm tra
-
-FontLab 9:
-  [PASS] Native Class Reader / Discovery / Selective Preview
-  [LOCK] Native Writer — chưa được xác minh
-  [NOTE] fgKerningGroups không hỗ trợ __setitem__
-  [NOTE] TypeRig không có trong môi trường kiểm thử
-  [RULE] FL9 vẫn Preview Only cho đến khi có writer đã kiểm chứng
-
-Dữ liệu kiểm thử — Post Grotesk Light:
-  - 878 glyphs
-  - 138 native classes
-  - 134 Vietnamese candidates
-  - Ban đầu có 174 available memberships (21 affected classes)
-  - Sau một lần Apply 6 memberships và Save / Reopen: còn 168 available
-    memberships; hai class đã được cập nhật không còn xuất hiện trong đề xuất.
-
-Kiểm thử chọn lọc trong GUI:
-  - 2 classes / 6 memberships
-  - STEPWISE READBACK: PASS
-  - Font thay đổi IN MEMORY ONLY ngay sau Apply; người dùng tự Save / Reopen
-    trên bản sao thử nghiệm và xác nhận kết quả.
-
-============================================================
-3. TIẾN TRÌNH GUI TRONG NGÀY
-============================================================
-
-Alpha.1.1
-  - Khắc phục lỗi khởi động FL9:
-    AttributeError: Slot 'result' can not be overwritten on Window object.
-  - Tránh ghi đè tên slot của QDialog.
-
-Alpha.1.2
-  - Live Preview tự cập nhật khi thay đổi lựa chọn.
-
-Alpha.1.3
-  - Tách workspace thành danh sách Native Classes và Proposed Glyphs.
-
-Alpha.1.4
-  - Làm gọn khu Guarded Apply.
-  - Plan token được giữ trong logic xác minh, không cần hiển thị cho người dùng.
-
-Alpha.1.5–1.7
-  - Tối ưu tỉ lệ hai cột và chiều cao workspace.
-  - Xử lý tương thích getter PythonQt (property hoặc callable).
-  - Bố trí lại các thẻ số liệu / nút Scan.
-  - Cải thiện chiều cao tối thiểu để nút Apply không bị cắt.
-
-Alpha.1.8 — M3 Expressive Redesign
-  - Header trắng; Scan xanh đậm.
-  - Bốn metric cards: Glyphs / Native Classes / Viet Candidates /
-    Available Adds.
-  - Workspace hai cột, Preview/Readback và Guarded Apply tách rõ.
-  - Giữ nguyên backend và tất cả chốt an toàn.
-
-Alpha.1.9 — Refined Layout (BẢN CHỐT HÔM NAY)
-  - Bỏ logo chữ NT.
-  - Header hiển thị Python version / FontLab version / Plugin version.
-    Chỉ hiển thị số build FontLab đầy đủ nếu API trả về; không tự đoán.
-  - Bỏ ký hiệu '>' trong nút Scan.
-  - Rút ngắn cảnh báo backup; tăng chiều cao khu Apply để tránh cắt chữ.
-  - Ẩn màu thanh splitter ngang để giao diện sạch hơn, vẫn giữ khả năng
-    điều chỉnh chiều cao.
-  - Kiểm thử offline: 17/17 PASS; Python source compile PASS; ASCII-only PASS.
-  - Người dùng đã xem trên FontLab 8 và phản hồi giao diện tốt.
-
-Ghi chú thẩm mỹ còn lại (không ảnh hưởng chức năng):
-  - Nền hàng tiêu đề QHeaderView trong bảng vẫn vuông ở góc, dù khung ngoài
-    đã bo; có thể polish sau.
-
-============================================================
-4. SAFETY CONTRACT — PHẢI GIỮ
-============================================================
-
-- Core V1 Stable không được sửa.
-- Native Core V2 Alpha.1.4.1 không được sửa tùy tiện.
-- Scan và Preview luôn read-only.
-- Apply chỉ thực hiện sau khi có kế hoạch và người dùng đồng ý rõ ràng.
-- Chỉ Apply trên bản COPY thử nghiệm đã lưu và có backup riêng.
-- Không auto Save; người dùng tự quyết định sau Readback PASS.
-- Trước Apply phải kiểm tra lại trạng thái thực tế, kế hoạch/token và
-  các điều kiện an toàn.
-- Lỗi readback hoặc ghi một phần => cảnh báo DO NOT SAVE, đóng COPY không lưu.
-- Không tự động mở khóa Native Writer trên FontLab 9.
-- OpenType Classes/Features và Native Classes phải được quản lý độc lập
-  về dữ liệu lẫn đường ghi, tránh ảnh hưởng dữ liệu client.
-
-============================================================
-5. ĐỊNH HƯỚNG NGÀY MAI — NGHIATYPE TOOLS MODULAR GUI
-============================================================
-
-Mục tiêu mới đã thống nhất:
-  Hợp nhất Native và OpenType trong MỘT ứng dụng NghiaType Tools,
-  nhưng dùng CÁC TAB RIÊNG theo kiểu điều hướng ứng dụng điện thoại.
-
-Định hướng module:
-  [Native Kerning]  |  [OpenType]  |  [Reports]
-
-Native Kerning:
-  - Giữ workflow V2 hiện có: Scan, Select, Preview, Guarded Apply, Readback.
-
-OpenType (không chỉ feature kern):
-  - OpenType Classes reader / membership inspection.
-  - Feature inspection: liga, locl, smcp, c2sc, stylistic sets, v.v.
-  - Validation: glyph/class references, thiếu/trùng, dependencies.
-  - Phát triển tiếp editor / writer có bảo vệ SAU KHI kiểm chứng API.
-  - Có thể chia tab con: Classes / Features / Validation.
-
-Reports:
-  - Scan report, conflicts, preview, readback và export JSON.
-
-Shared Shell:
-  - Header, font/master context, trạng thái kết nối, điều hướng tab.
-  - Tab switch không xóa lựa chọn đang thao tác.
-  - Mỗi module có Preview và Apply riêng khi cần.
-  - Không gộp Native Core và OpenType Core thành một writer.
-
-Ưu tiên buổi sau:
-  1) Khảo sát lại OpenType V1 Stable và API đọc OT Classes/Features
-     trên FL8/FL9 (READ ONLY).
-  2) Thiết kế shell PythonQt nhiều tab và state riêng mỗi module.
-  3) Tích hợp Native GUI V2 như module đầu tiên, không sửa backend.
-  4) Xây tab OpenType đọc/preview trước; writer là công việc riêng.
-  5) Lưu ý hành vi FontLab 'Update all auto features' có thể tái tạo
-     OpenType class/feature content; phải kiểm tra trước khi cho phép ghi.
-
-QUYẾT ĐỊNH KIẾN TRÚC:
-  HỢP NHẤT GIAO DIỆN — KHÔNG HỢP NHẤT HAI CORE.
-
-============================================================
-6. FILE THAM CHIẾU
-============================================================
-
-- NghiaType_Native_Kerning_V2_GUI_Alpha1.py
-  (latest: V2 Alpha.1.9 / Refined Layout)
-- NghiaType_Native_Core_V2_Alpha1_4_1_SCOPED_GUARDED_FL8(1).py
-  (companion Native Core, không chỉnh sửa)
-- nghiatype_native_kerning_m3_expressive.html
-  (mẫu tham chiếu thiết kế UI)
-- test_native_v2_gui_backend.py
-  (bộ kiểm thử mô phỏng backend; 17/17 PASS tại thời điểm chốt)
-
-END OF DEVLOG — 18/11/2026
-

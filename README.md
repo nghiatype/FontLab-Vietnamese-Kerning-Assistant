@@ -1,44 +1,86 @@
-# Vietnamese Kerning Assistant — FontLab 8/9 GUI (BETA)
+# NghiaType — FontLab Tools
 
-Giao diện chạy **bên trong FontLab 8/9** qua PythonQt, sử dụng bộ xử lý `FontLab_Vietnamese_Kerning_Assistant_v1.py` đi kèm. Công cụ gợi ý bổ sung các glyph tiếng Việt vào kerning class đã tồn tại trong OpenType feature `kern`.
+**Phiên bản hiện tại:** `1.9.3 Beta` · **Cập nhật:** 19/11/2026  
+**Nền tảng chính:** FontLab 8 (PythonQt) · **FontLab 9:** hỗ trợ đọc và xem trước, chức năng ghi chưa được xác nhận
 
-**Trạng thái kiểm thử (người dùng xác nhận):** Đã thử trên **FontLab 8.4.3.8984** và **FontLab 9.0.9809** với font kiểm thử Post Grotesk Light. Quy trình Scan → Apply (readback khớp chính xác) → Compile → Save/Close/Reopen → Scan lại (0 gợi ý) → Export OTF/TTF và kiểm tra kerning đã hoạt động trong những lần thử này. Đây vẫn là bản **BETA**; chưa bảo đảm tương thích với mọi font hoặc phiên bản FontLab.
+NghiaType là bộ công cụ hỗ trợ thiết kế typeface trong FontLab. Mục tiêu là tận dụng những tính năng FontLab đã có, đồng thời giúp người dùng kiểm tra dữ liệu và thực hiện các thao tác lặp lại dễ dàng hơn.
 
-## Cài và mở giao diện
+Phiên bản này tập trung vào **Kerning Studio**: bổ sung glyph vào các nhóm kerning Native, đối chiếu với OpenType `kern`, rồi chọn những glyph cần đồng bộ. Plugin không tự động quyết định thay người dùng.
 
-1. Giữ **hai file `.py` cùng thư mục**:
-   - `FontLab_Vietnamese_Kerning_GUI.py` — file mở giao diện
-   - `FontLab_Vietnamese_Kerning_Assistant_v1.py` — bộ xử lý đã test
-2. Mở FontLab 8 hoặc 9 và một font có OpenType feature `kern` dạng text.
-3. Trong **Scripting panel** của FontLab, mở `FontLab_Vietnamese_Kerning_GUI.py`, rồi chạy script.
-4. Cửa sổ **Vietnamese Kerning Assistant / BETA** sẽ hiện lên. Nếu có lỗi, kiểm tra **Output panel** hoặc traceback; không cần cài PythonQt/PyQt riêng bằng pip.
+> **Beta:** Hãy dùng một bản font **COPY đã lưu và có bản sao lưu độc lập** để kiểm thử. Plugin không tự Save hoặc Compile. Nếu thao tác ghi hoặc đọc lại dữ liệu bị lỗi, **đóng bản COPY mà không lưu**.
 
-## Cách dùng an toàn
+## Kerning Studio làm được gì?
 
-1. **Sao lưu toàn bộ file font trước khi thao tác.** Khuyến nghị **Save As** thành một bản Copy để thử nghiệm. Công cụ **không tự sao lưu toàn bộ font**.
-2. Nhấn **Scan active font** để xem số glyph, kern classes, các thành viên được gợi ý và cảnh báo.
-3. Có thể lọc theo tên class/glyph hoặc bỏ chọn từng glyph; **Select all/none** áp dụng lên toàn bộ danh sách, kể cả dòng đang bị lọc. Với glyph chỉ được nhận diện theo tên (**name-only**), hãy tự kiểm tra trước khi cho phép thêm.
-4. Nhấn **Export FEA + Diff** để xuất `kern_BACKUP_original.fea`, `kern_PROPOSED.fea`, `kern_changes.diff`, `report.json` vào thư mục `FontLab_Kerning_Assistant` trong thư mục người dùng Windows. Nút này **không sửa font**.
-5. Nếu thấy đúng, đánh dấu **I confirm I have a separate full-font backup**. Nếu chọn glyph name-only, phải duyệt và đánh dấu xác nhận thứ hai.
-6. Nhấn **Apply Changes** → đọc xác nhận → chọn **Yes**. GUI chỉ sửa text feature `kern` **trong bộ nhớ**, không tự lưu font. Chỉ khi hiện **APPLY READBACK: EXACT MATCH** mới chuyển sang kiểm tra trong FontLab.
-7. **Compile/Play** phần OpenType Features. Nếu có lỗi hoặc kết quả bất thường, **đóng font mà không lưu** và sử dụng bản sao lưu.
-8. Nếu compile thành công, lưu font, đóng và mở lại, rồi nhấn **Scan active font**. Kết quả mong đợi là **0 thành viên cần thêm**. Xuất OTF/TTF và kiểm tra kerning trong Metrics/ứng dụng khác.
+| Bước | Chức năng | Có sửa font không? |
+| --- | --- | --- |
+| **01 · Native Classes** | Quét class Native, gợi ý glyph tiếng Việt còn thiếu; chọn từng class/glyph, xem trước, kiểm tra và thêm vào Native | Chỉ khi chọn **Add to Native**, xác nhận và vượt qua kiểm tra |
+| **02 · Cross-check** | So sánh thành viên class Native với OpenType `kern`; hiển thị `MATCH`, `DIFFERENT`, glyph chỉ có ở mỗi bên | **Không** — chỉ đọc |
+| **03 · OT Sync & Apply** | Chọn những glyph Native có nhưng class OpenType chưa có, xem diff FEA, kiểm tra trước khi ghi, backup và ghi class có xác nhận | Chỉ khi chọn **Add to test font**, xác nhận và vượt qua kiểm tra |
 
-### Giới hạn bảo vệ ở bản GUI hiện tại
+Hai bên dùng **core và cơ chế ghi riêng**. Cross-check là cầu nối để người dùng xem sự khác biệt, không phải lệnh đồng bộ tự động. Plugin chỉ bổ sung thành viên vào **class đã tồn tại**; không tự thay giá trị kerning pair hoặc viết lại các quy tắc `pos`.
 
-- GUI đang đặt `ALLOW_ORIGINAL_FONT = True`, nên **không bắt buộc tên file chứa chữ `Copy`**. Dù vậy, vẫn phải xác nhận đã có **bản sao lưu font đầy đủ** trước khi Apply.
-- Nếu muốn bắt buộc tên file chứa chữ `copy`, đổi thành `ALLOW_ORIGINAL_FONT = False` trong `FontLab_Vietnamese_Kerning_GUI.py`.
-- **Script core khi chạy độc lập** có thiết lập Apply riêng và mặc định ở chế độ Preview. Quy tắc tên `copy` trong core không phải quy tắc đang được GUI sử dụng.
-- File backup `.fea` và báo cáo **không thể thay thế** bản sao lưu toàn bộ font nguồn.
+### Luồng sử dụng đề xuất (FontLab 8)
 
-## Ghi chú kỹ thuật
+1. **Save As** font thành một bản `.vfc` COPY để thử; chuẩn bị thêm một bản backup độc lập.
+2. Mở `NghiaType_1.9.3_Beta.py` trong **Scripting/Macro panel** của FontLab và chạy.
+3. Trong **Native Classes**, nhấn **Scan Native Classes**, chọn các gợi ý, **Check selection**, rồi xác nhận **Add to Native**. Đợi kết quả đọc lại dữ liệu thành công.
+4. Sang **Cross-check** để xem Native và OpenType đang khớp hay khác nhau ở glyph nào. `DIFFERENT` không có nghĩa là plugin đã sửa font.
+5. Sang **OT Sync & Apply**, chỉ chọn glyph muốn bổ sung, xem FEA diff và nhấn **Check changes**. Nếu đạt kiểm tra, xác nhận ghi và chọn **file backup `.fea` mới** khi được yêu cầu.
+6. Sau khi đọc lại dữ liệu thành công, **tự Save bản COPY**. Nếu có lỗi ghi/đọc lại, **không Save**.
 
-- Mở/Scan/Preview không thay đổi font; **Export FEA + Diff** chỉ ghi báo cáo ra đĩa.
-- Apply **không tự động Save**; nó chỉ sửa text feature `kern` trong font đang mở sau khi có bản backup FEA và xác nhận.
-- Chỉ thêm các glyph tiếng Việt nhận dạng được vào **class đã tồn tại**, không tự tạo class mới, không thay đổi POS rules.
-- **Native kerning groups trong Classes panel không được cập nhật trực tiếp.** Dữ liệu native và class khai báo trong **OpenType Features > kern** có thể khác nhau.
-- Các thao tác như **Update all auto features** có thể tái tạo feature từ dữ liệu native và ghi đè bổ sung trong text `kern`; hãy Scan và kiểm tra lại nếu dùng thao tác này.
-- Các file báo cáo tạo khi chạy có thể chứa **đường dẫn font và nội dung FEA của font client**. Không public báo cáo này nếu chưa được phép.
-- Nếu không hiện GUI hoặc báo lỗi liên quan PythonQt, gửi nội dung **Output panel** và phiên bản FontLab; đừng tự thay `PyQt5`/`PySide6` vào script này.
+Sau Native Apply thành công, phiên bản 1.9.3 cho phép tiếp tục sang Cross-check và OT Sync **ngay trong cùng phiên FontLab**, không bắt buộc Save/đóng/mở lại ở giữa. Các bước kiểm tra dữ liệu trực tiếp trước khi ghi vẫn được giữ. Luồng liền mạch này cần thêm thử nghiệm thực tế trên nhiều font.
 
-**Khuyến nghị:** Luôn thử trên bản sao trước khi dùng với font đang làm việc cho client.
+## Cài đặt
+
+Giải nén trọn bộ release vào **một thư mục riêng**, tránh trộn với các script Alpha cũ. Các file Python cần nằm **cùng thư mục**:
+
+```text
+NghiaType_1.9.3_Beta.py                  # Chạy file này
+NghiaType_Native_Kerning_V2_GUI_Alpha1.py
+NghiaType_Native_Core_V2_Alpha1_4_1_SCOPED_GUARDED_FL8(1).py
+FontLab_Vietnamese_Kerning_Assistant_v1.py
+NghiaType_Kerning_Crosscheck_V3_Alpha0_11.py
+NghiaType_OT_Sync_Preview_V3_Alpha0_12.py
+NghiaType_OT_Guarded_Preflight_V3_Alpha0_14.py
+NghiaType_OT_Guarded_Writer_V3_Alpha0_16.py
+```
+
+**Lưu ý:** Giữ **nguyên tên file**, kể cả `(1)` ở Native Core: bản hiện tại tìm các thành phần theo tên cụ thể. Thư mục `Archive/` là lịch sử thử nghiệm, không phải nơi chạy bản phát hành.
+
+## Trạng thái kiểm thử và giới hạn
+
+- **FontLab 8:** Người phát triển đã thử nghiệm thực tế các luồng Native Apply, OpenType class Apply, đọc lại kết quả, lưu và mở lại trên bản font COPY. Những thử nghiệm đó không chứng minh mọi font đều tương thích.
+- **FontLab 9:** Đọc Native/Preview đã được thử, nhưng **Native/OT writer vẫn khóa** do API ghi chưa được xác minh đủ.
+- **Offline:** 92 bài regression test đã đạt ở bản 1.9.3, gồm lỗi PythonQt `int object is not callable` và một số kiểm tra cấu trúc UI. Đây không phải bài kiểm tra giao diện trực tiếp trong FontLab.
+- Cross-check chỉ đọc **class declarations** và các lệnh `pos` đơn giản bên trong text feature `kern`; **không** kiểm tra toàn bộ GPOS đã biên dịch, tên class đơn lẻ, hay mọi dạng cú pháp FEA.
+- `Create [kern] Feature`, `Update Auto Features` và tùy chọn **Update on Compile** của FontLab có thể tái tạo nội dung `kern` từ Native. Sau các thao tác này, hãy Cross-check lại trước khi đồng bộ.
+- Writer chỉ thay đổi dữ liệu **trong bộ nhớ** sau khi xác nhận và kiểm tra; backup `.fea` **không thay thế** bản backup `.vfc` đầy đủ.
+
+### Khi gặp lỗi
+
+1. **Đừng Save bản font thử** nếu lỗi xảy ra trong quá trình ghi hoặc xác minh kết quả.
+2. Ghi lại thao tác vừa thực hiện, phiên bản FontLab và traceback trong **Output panel**.
+3. Kiểm tra bộ file có đầy đủ và đúng tên, đặc biệt các module Native/OT bên trên.
+4. Gửi báo cáo lỗi kèm ảnh giao diện **đã ẩn tên font/đường dẫn nhạy cảm nếu cần**.
+
+## Cấu trúc dự án và định hướng
+
+- **`README.md`:** cách dùng hiện tại.
+- **`DEVLOG.md`:** quyết định kỹ thuật, kết quả thử nghiệm và các giới hạn cần giữ.
+- **`Archive/`:** script thử nghiệm/Alpha cũ, giữ lại để tra cứu; không chạy lẫn với release.
+
+Sau Kerning Studio, các hướng phát triển dự kiến là:
+
+1. **OpenType Studio:** xem class, feature, lookup và kiểm tra tham chiếu GSUB/GPOS ngoài `kern`.
+2. **Accented Alternates:** từ glyph như `A.ss01` đã có anchor, đề xuất tạo các biến thể có dấu cùng công thức composite để FontLab tự dựng và căn dấu.
+3. **Glyph Matrix / Language Coverage:** kiểm tra ngôn ngữ, liệt kê glyph còn thiếu, gợi ý thứ tự bổ sung và liên kết tham khảo Unicode.
+
+Các ý tưởng trên **chưa phải tính năng đã hoàn thành**.
+
+## Dành cho người tiếp tục phát triển
+
+Đọc **[DEVLOG.md](DEVLOG.md)** trước khi sửa writer. Nguyên tắc chính: **giữ Native và OpenType độc lập, chỉ ghi trên COPY thử nghiệm, xác nhận rõ ràng, đọc lại chính xác, không tự Compile/Save**. Không mở khóa FontLab 9 writer chỉ vì các kiểm thử read-only thành công.
+
+---
+
+**NghiaType · 19.11.2026 · Kerning Studio 1.9.3 Beta**
