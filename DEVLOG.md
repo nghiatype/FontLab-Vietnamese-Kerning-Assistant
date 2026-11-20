@@ -1,77 +1,124 @@
-# NghiaType Development Log
+# NghiaType Development Log / Nhật ký phát triển
 
 This log records the Kerning Studio milestones, release-level changes, and safety constraints. It is intended to accompany [README.md](README.md).
 
-## 1.9.5 — 20 November 2026
+Tài liệu ghi lại những cột mốc phát triển Kerning Studio, thay đổi theo từng phiên bản và các nguyên tắc an toàn. Đọc cùng với [README.md](README.md) để có đầy đủ bối cảnh.
 
-**Status: Kerning Studio workflow finalized.**
+## 1.9.5 — 20 November 2026 / 20.11.2026
 
-### Added and refined
+**Status: Kerning Studio workflow finalized.**  
+**Trạng thái: Hoàn thiện quy trình làm việc của Kerning Studio.**
 
-- Completed the three-step **Native classes → Cross-check → OpenType sync** workflow.
-- Simplified workspace lists: glyph names remain prominent, Native side (`Left` / `Right`) and `+N` counts use compact capsules, and individual rows have subtle dividers.
-- Gave Cross-check results clear priority: **In sync** uses a green capsule with white text; differences and manual-review states use separate, readable warning colors.
-- Moved explanations for shared OpenType classes into **separate warning cards**, instead of burying critical advice in a long paragraph.
-- Improved selection lock feedback with a system lock icon and genuinely disabled/visually muted workspace controls. Locked list backgrounds stay white, avoiding a rectangular pink overlay inside rounded panels.
-- Removed redundant table headings, repeated status text, distracting bottom notes, and the old **NATIVE + OPENTYPE** title chip.
-- Set a stable product subtitle: **“Keep your Native and OpenType kerning classes in sync.”**
-- Kept technical reports accessible through contextual **Report / Details / FEA details** actions.
+### Added and refined / Hoàn thiện giao diện
 
-### OpenType confirmation and backup UX
+- Completed the three-step **Native classes → Cross-check → OpenType sync** workflow.  
+  Hoàn thiện quy trình ba bước **Native classes → Cross-check → OpenType sync**.
+- Simplified workspace lists: clear glyph names, compact `Left` / `Right` and `+N` capsules, and subtle row dividers.  
+  Tinh giản danh sách: làm nổi bật tên glyph, gom nhãn `Left` / `Right` và số lượng `+N` vào capsule, thêm đường chia nhẹ giữa các hàng.
+- Improved Cross-check hierarchy: **In sync** has a green background and white text, while **Differs** and review warnings use distinct colors.  
+  Làm rõ mức độ ưu tiên trong Cross-check: **In sync** nền xanh chữ trắng; **Differs** và các cảnh báo dùng màu riêng, dễ nhận biết.
+- Separated shared-class explanations into **dedicated warning cards**.  
+  Đưa lý do class OpenType dùng chung vào **khung cảnh báo riêng**, tránh lẫn trong một đoạn mô tả dài.
+- Locked selections use a system icon and disabled/muted controls. Locked table surfaces stay white rather than forming a square pink overlay.  
+  Khi khóa lựa chọn, giao diện dùng icon hệ thống, vô hiệu hóa và làm mờ vùng chọn; nền bảng vẫn trắng, không tạo mảng hồng hình vuông.
+- Removed redundant table headings, duplicate status messages, bottom notes, and the **NATIVE + OPENTYPE** chip.  
+  Loại bỏ hàng tiêu đề thừa, thông báo trạng thái trùng lặp, ghi chú dưới thanh Close và chip **NATIVE + OPENTYPE**.
+- Added the stable subtitle **“Keep your Native and OpenType kerning classes in sync.”**  
+  Sử dụng câu giới thiệu cố định **“Keep your Native and OpenType kerning classes in sync.”**
+- Retained contextual **Report / Details / FEA details** controls for technical information.  
+  Giữ báo cáo kỹ thuật trong các nút **Report / Details / FEA details** đúng ngữ cảnh.
 
-- **Changed the order:** show the human-readable confirmation dialog **before** opening the file-location picker.
-- Explicitly describe the backup as a separate **OpenType `kern` `.fea` file**, not a font save operation.
-- After confirmation, users choose a **new backup destination**; only then can the guarded OpenType update proceed.
-- Canceling confirmation or the file picker stops the operation without adding glyphs.
-- Retained required user acknowledgment, fresh preflight checks, exact-result verification, and a manual font Save.
+### OpenType confirmation and backup UX / Xác nhận và sao lưu
 
-### Reliability fixes carried into 1.9.5
+- **Changed the order:** explain the operation in a confirmation dialog **before** the Save As picker appears.  
+  **Đổi thứ tự UX:** hiển thị hộp thoại giải thích và xác nhận **trước khi** mở cửa sổ chọn nơi lưu.
+- The backup is explicitly a separate **OpenType `kern` `.fea` file**, not a font save operation.  
+  Nói rõ đây là **file backup `.fea` của tính năng OpenType `kern`**, không phải lưu file font.
+- Users choose a **new backup destination** after confirming; the guarded writer then handles the update.  
+  Người dùng chọn **nơi lưu bản backup mới** sau khi xác nhận; sau đó bộ ghi dữ liệu có bảo vệ mới được phép tiếp tục.
+- Canceling either confirmation or file selection stops the operation without adding glyphs.  
+  Hủy ở một trong hai cửa sổ sẽ dừng thao tác và **không thêm glyph**.
+- Kept acknowledgment, fresh preflight, exact readback, and manual font Save.  
+  Giữ nguyên xác nhận bắt buộc, kiểm tra an toàn mới nhất, đọc lại kết quả chính xác và lưu font bằng tay.
 
-- Kept the **Scan again** action in the main workflow guidance instead of allowing a duplicate button to float into the page header after a completed round.
-- Preserved the completed OpenType state until the user intentionally starts a new Native scan.
-- Prevented verified readback rows from becoming editable selections again.
-- Corrected **Close** button callbacks in secondary dialogs to avoid passing PythonQt's `clicked(False)` argument to a no-argument `accept()` method.
-- Removed Qt's unused `?` window-help hint from secondary and confirmation dialogs.
-- Fixed duplicate/overlapping status capsules by using one rendered badge per result cell.
-- Avoided graphics-opacity effects that previously left stale table content painted over another workflow tab.
+### Reliability fixes carried into 1.9.5 / Các lỗi đã khắc phục
 
-### Safety boundaries retained
+- Kept **Scan again** in the main guidance banner, preventing a duplicate floating button after a completed round.  
+  Giữ **Scan again** trong khung hướng dẫn chính, không để nút quét bị trôi lên góc trên sau khi hoàn thành workflow.
+- Preserved completed OpenType results until the user deliberately starts a new Native scan.  
+  Giữ kết quả OpenType đã hoàn thành cho đến khi người dùng chủ động quét Native lại.
+- Prevented verified readback rows from becoming editable selections.  
+  Không cho các hàng kết quả đã xác minh quay lại trạng thái chỉnh sửa.
+- Fixed secondary-dialog **Close** callbacks that received PythonQt's `clicked(False)` argument incorrectly.  
+  Sửa lỗi nút **Close** do PythonQt truyền tham số `clicked(False)` không phù hợp với `accept()`.
+- Removed the unused Qt `?` title-bar hint in report and confirmation dialogs.  
+  Bỏ dấu `?` không có tác dụng cạnh nút đóng ở các hộp thoại.
+- Fixed duplicated/overlapping status capsules by rendering one badge per result cell.  
+  Sửa tình trạng capsule chồng chữ hoặc xuất hiện hai lần trong cùng ô kết quả.
+- Avoided opacity effects that previously painted old table contents over another tab.  
+  Bỏ hiệu ứng làm mờ gây lỗi nội dung bảng cũ bị vẽ đè lên tab khác.
 
-- **Native V2:** continues using the established scanner/planner and guarded writer; selected memberships must pass a fresh live safety check before applying.
-- **Cross-check:** remains read-only and does not authorize any writer operation by itself.
-- **OpenType sync:** still requires an eligible, reviewed selection; matching preflight data; a new `.fea` backup path; a guarded FontLab 8 test-copy writer; and post-write readback verification.
-- **No automatic Save or Compile** in either writer. An unverified or potentially partial write results in a **DO NOT SAVE** state.
-- Shared/ambiguous classes remain blocked from automatic synchronization.
+### Safety boundaries retained / Nguyên tắc an toàn giữ nguyên
 
-### Verification
+- **Native V2:** retains its scanner, planner, guarded writer, and live safety recheck before changes.  
+  **Native V2:** giữ nguyên bộ quét, lập kế hoạch và bộ ghi an toàn; luôn kiểm tra lại dữ liệu đang mở trước khi thêm glyph.
+- **Cross-check:** is read-only; comparing never grants write permission.  
+  **Cross-check:** chỉ đọc; kết quả đối chiếu không tự cấp quyền ghi dữ liệu.
+- **OpenType sync:** requires eligible selections, matching preflight, a new `.fea` backup path, FontLab 8 copy-only guarded writing, and readback.  
+  **OpenType sync:** chỉ ghi khi lựa chọn hợp lệ, preflight khớp, có nơi lưu backup `.fea` mới, đúng bản COPY FontLab 8 và xác minh kết quả sau khi ghi.
+- **No automatic Save or Compile.** Unverified or possibly partial writes produce **DO NOT SAVE**.  
+  **Không tự Save hoặc Compile.** Nếu kết quả không xác minh được hoặc có nguy cơ ghi một phần, giao diện sẽ báo **DO NOT SAVE**.
+- Shared and ambiguous classes cannot be force-synced automatically.  
+  Class dùng chung hoặc không xác định rõ không được tự ép đồng bộ.
+
+### Verification / Kiểm thử
 
 - Nine offline regression suites passed in the development workspace, including selection locking, cancellation of both confirmation stages, Native re-scan, row and capsule rendering logic, round-completion state, and the backup-dialog sequence.
+  
+  Đã vượt qua chín bộ kiểm thử offline, bao gồm khóa lựa chọn, hủy ở cả hai bước xác nhận, quét lại Native, trạng thái hàng/capsule, kết thúc workflow và thứ tự hộp thoại backup.
 - The FontLab/PythonQt rendering and full end-to-end font-writing flow must still be exercised on a **disposable FontLab 8 test copy** when moving the release to a different environment.
+  
+  Khi chuyển bản phát hành sang môi trường khác, vẫn cần kiểm tra hiển thị PythonQt và luồng ghi font thực tế bằng **bản COPY thử nghiệm trong FontLab 8**.
 
-## 1.9.4 Beta — 18–20 November 2026
+## 1.9.4 Beta — 18–20 November 2026 / 18–20.11.2026
 
-**Focus: UI/UX refinement and consolidated Kerning Studio shell.**
+**Focus: UI/UX refinement and consolidated Kerning Studio shell.**  
+**Trọng tâm: tinh chỉnh UI/UX và gom ba bước vào một giao diện Kerning Studio.**
 
-- Consolidated Native classes, Cross-check, and OpenType sync under one desktop workflow.
-- Introduced contextual guidance cards, manual action states, separate reports, and clearer read-only summaries.
-- Iteratively simplified colors, class labels, selection checkboxes, table layout, window sizing, and result feedback using the Material 3 light theme.
-- Added explicit **Check → Lock → Confirm** behavior for Native selection and retained independent OpenType preflight safeguards.
-- Tested completion and re-scan behavior to avoid leaving stale **Add glyphs** actions visible after OpenType sync.
+- Consolidated Native classes, Cross-check, and OpenType sync into one desktop workflow.  
+  Gom Native classes, Cross-check và OpenType sync vào một workflow chung.
+- Introduced contextual guidance, action states, separate reports, and read-only summaries.  
+  Bổ sung hướng dẫn theo trạng thái, hành động rõ ràng, cửa sổ report riêng và tóm tắt chỉ đọc.
+- Refined colors, class labels, checkboxes, list spacing, window layout, and feedback using the Material 3 light theme.  
+  Tinh chỉnh màu sắc, nhãn class, checkbox, khoảng cách, bố cục và thông báo theo Material 3 light theme.
+- Added **Check → Lock → Confirm** for Native and independent OpenType preflight safeguards.  
+  Hoàn thiện quy trình **Kiểm tra → Khóa → Xác nhận** của Native và kiểm tra độc lập của OpenType.
+- Verified fresh-scan behavior after OpenType sync to avoid stale **Add glyphs** actions.  
+  Kiểm tra việc quét vòng mới sau OpenType sync để tránh nút **Add glyphs** cũ còn xuất hiện.
 
-## Earlier development milestones — November 2026
+## Earlier development milestones / Các cột mốc trước đó — November 2026
 
-- Developed and tested **Native Kerning V2** read/plan/write operations for existing FontLab Native classes.
-- Built read-only **Native ↔ OpenType `kern` class** Cross-check with side-aware mapping.
-- Added selective OpenType preview, guarded preflight, backup creation, and exact readback for FontLab 8 copies.
-- Separated the GUI shell from its companion V1/V2/V3 engines so that UI changes do not silently replace safety-sensitive core logic.
-- Investigated FontLab 9 compatibility; Native/OT guarded writing remains **unverified/experimental** there.
+- Developed and tested **Native Kerning V2** operations for existing FontLab groups.  
+  Phát triển và thử nghiệm **Native Kerning V2** với các nhóm kerning có sẵn trong FontLab.
+- Built read-only **Native ↔ OpenType `kern`** Cross-check with kerning-side awareness.  
+  Xây dựng Cross-check **Native ↔ OpenType `kern`** ở chế độ chỉ đọc và có phân biệt hai phía kerning.
+- Added selective OpenType preview, safety preflight, `.fea` backup, and exact readback for FontLab 8 copies.  
+  Bổ sung xem trước OpenType có chọn lọc, kiểm tra an toàn, backup `.fea` và đối chiếu kết quả chính xác trên bản COPY FontLab 8.
+- Kept the GUI shell separate from the V1/V2/V3 engines.  
+  Tách giao diện khỏi các engine V1/V2/V3 để việc sửa UI không vô tình thay đổi phần xử lý dữ liệu quan trọng.
+- Investigated FontLab 9; guarded Native/OT writes remain **experimental**.  
+  Nghiên cứu FontLab 9; thao tác ghi Native/OpenType có bảo vệ vẫn ở mức **thử nghiệm**.
 
-## Known limits / next review
+## Known limits / next review / Giới hạn và hướng phát triển
 
-- Support and test coverage for **FontLab 9 writing** remain open work.
-- Complex text `.fea` constructs and compiled GPOS lookups are outside the guaranteed Cross-check scope.
-- Re-test against a fresh disposable copy after changing FontLab builds, companion engines, or native-feature regeneration behavior.
+- **FontLab 9 writing** requires additional implementation and tests.  
+  Cần tiếp tục nghiên cứu và kiểm thử khả năng **ghi dữ liệu trên FontLab 9**.
+- Complex `.fea` syntax and compiled GPOS lookups remain outside guaranteed Cross-check coverage.  
+  Cross-check chưa bảo đảm hỗ trợ cú pháp `.fea` phức tạp hoặc lookup GPOS đã biên dịch.
+- Re-test using a fresh copy after upgrading FontLab or companion engines.  
+  Nên kiểm tra lại trên bản COPY sạch khi nâng cấp FontLab hay thay đổi các engine đi kèm.
 
 ---
 
-**Release principle:** Never let a prettier interface weaken a writer's permission checks, backups, manual confirmation, or readback requirements.
+**Release principle:** Never let a prettier interface weaken permission checks, backups, user confirmation, or readback.  
+**Nguyên tắc phát hành:** Giao diện đẹp hơn không được đánh đổi bằng việc giảm kiểm tra an toàn, bỏ backup, bỏ xác nhận hoặc bỏ xác minh kết quả.
